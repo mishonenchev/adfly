@@ -14,8 +14,8 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping("{id}")
-    public ResponseEntity<?> GetUsers(@PathVariable Long id){
-        return ResponseEntity.notFound().build();
+    @GetMapping()
+    public ResponseEntity<?> GetUsers(){
+        return ResponseEntity.ok("12");
     }
 }
