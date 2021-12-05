@@ -16,6 +16,6 @@ public class CreateUserRequest {
     private String password;
     @NotBlank
     private String rePassword;
-    private String authorities;
+    private String authority;
 
 }

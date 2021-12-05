@@ -1,5 +1,6 @@
 package io.app.adfly.entities;
 
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.Entity;
@@ -8,8 +9,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
+@NoArgsConstructor
 
 public class Role implements GrantedAuthority {
+  public Role(String authority){
+      this.authority = authority;
+  }
+
     public Long getId() {
         return id;
     }
