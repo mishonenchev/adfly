@@ -102,10 +102,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(format("%s/**", swaggerPath)).permitAll()
                 // Our public endpoints
                 .antMatchers("/api/public/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/users/**").permitAll()
-                .antMatchers(HttpMethod.POST, "/api/author/search").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/book/**").permitAll()
-                .antMatchers(HttpMethod.POST, "/api/book/search").permitAll()
+                .antMatchers("/api/public/login").permitAll()
+                .antMatchers("/v2/api-docs").permitAll()
+                .antMatchers("/v2/swagger-ui").permitAll()
+                .antMatchers("/swagger-ui.html/**").permitAll()
+                .antMatchers("/swagger-resources/**").permitAll()
+                .antMatchers("/webjars/**").permitAll()
                 // Our private endpoints
                 .anyRequest().authenticated();
 

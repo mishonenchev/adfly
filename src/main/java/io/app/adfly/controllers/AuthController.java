@@ -3,6 +3,7 @@ package io.app.adfly.controllers;
 import io.app.adfly.config.security.JwtTokenUtil;
 import io.app.adfly.domain.dto.CreateUserRequest;
 import io.app.adfly.domain.dto.UserView;
+import io.app.adfly.domain.mapper.IMapper;
 import io.app.adfly.domain.models.AuthRequest;
 import io.app.adfly.entities.User;
 import io.app.adfly.services.UserService;
@@ -30,6 +31,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtTokenUtil;
     private final UserService userService;
+    private final IMapper mapper;
 
     @PostMapping("login")
     public ResponseEntity<?> login(@RequestBody @Valid AuthRequest request) {
@@ -38,10 +40,7 @@ public class AuthController {
                     .authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
             User user = (User) authenticate.getPrincipal();
-            var userView = new UserView();
-            userView.setUsername(user.getUsername());
-            userView.setId(user.getId().toString());
-            userView.setFullName(user.getUsername());
+            var userView = mapper.UserToUserView(user);
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.AUTHORIZATION, jwtTokenUtil.generateAccessToken(user))
