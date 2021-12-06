@@ -1,7 +1,12 @@
 package io.app.adfly.controllers;
+import io.app.adfly.entities.Role;
 import io.app.adfly.repositories.UserRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.security.RolesAllowed;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -14,8 +19,11 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping()
+    @GetMapping()@RolesAllowed(Role.USER_ADVERTISER)
     public ResponseEntity<?> GetUsers(){
-        return ResponseEntity.ok("12");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentPrincipalName = authentication.getName();
+
+        return ResponseEntity.ok(currentPrincipalName);
     }
 }
