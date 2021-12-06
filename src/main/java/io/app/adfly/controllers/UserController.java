@@ -23,7 +23,7 @@ import java.util.Objects;
 
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/profile")
+@RequestMapping("/api/secure/profile")
 @RequiredArgsConstructor
 public class UserController {
 
