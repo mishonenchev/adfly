@@ -67,6 +67,15 @@ public class User implements UserDetails {
     private String username;
     private String password;
 
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    private String fullName;
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
