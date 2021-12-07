@@ -23,4 +23,11 @@ public interface IMapper {
     ProductRewardingDto ProductRewardingToProductRewardingDto(ProductRewarding productRewarding);
 
     List<ProductDto> ListProductToListProductDto(List<Product> products);
+
+    Product ProductRequestToProduct(ProductRequest request);
+    Product ProductRequestToProduct(ProductRequest request, Product source);
+
+    ProductRewarding ProductRewardingRequestToProductRewarding(ProductRewardingRequest request);
+
+    ProductRewarding ProductRewardingRequestToProductRewarding(ProductRewardingRequest request, ProductRewarding source);
 }

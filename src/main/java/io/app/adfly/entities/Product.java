@@ -53,4 +53,19 @@ public class Product {
     @OneToOne
     private ProductRewarding productRewarding;
 
+    public ProductStatus getProductStatus() {
+        return productStatus;
+    }
+
+    public void setProductStatus(ProductStatus productStatus) {
+        this.productStatus = productStatus;
+    }
+
+    private ProductStatus productStatus;
+
+    public enum ProductStatus{
+        Active,
+        Retired
+    }
+
 }

@@ -6,6 +6,11 @@ import java.awt.print.Printable;
 import java.util.List;
 
 public class PaginatedRequest {
+    public PaginatedRequest(int startAt, int count) {
+        StartAt = startAt;
+        Count = count;
+    }
+
     private int StartAt = 0;
 
     public int getStartAt() {

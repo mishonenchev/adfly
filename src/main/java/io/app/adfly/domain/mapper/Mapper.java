@@ -65,7 +65,7 @@ public class Mapper implements IMapper{
         pdto.setName(product.getName());
         pdto.setDescription(product.getDescription());
         pdto.setId(product.getId());
-        pdto.setProductRewardingDto(ProductRewardingToProductRewardingDto(product.getProductRewarding()));
+        pdto.setProductRewarding(ProductRewardingToProductRewardingDto(product.getProductRewarding()));
 
         return pdto;
     }
@@ -86,5 +86,30 @@ public class Mapper implements IMapper{
             productList.add(ProductToProductDto(products.get(i)));
         };
         return productList;
+    }
+
+    @Override
+    public Product ProductRequestToProduct(ProductRequest request) {
+        return ProductRequestToProduct(request, new Product());
+    }
+
+    @Override
+    public Product ProductRequestToProduct(ProductRequest request, Product source) {
+        source.setDescription(request.getDescription());
+        source.setName(request.getName());
+        return source;
+    }
+
+    @Override
+    public ProductRewarding ProductRewardingRequestToProductRewarding(ProductRewardingRequest request) {
+       return ProductRewardingRequestToProductRewarding(request, new ProductRewarding());
+    }
+
+    @Override
+    public ProductRewarding ProductRewardingRequestToProductRewarding(ProductRewardingRequest request, ProductRewarding source) {
+        source.setRewardingType(request.getRewardingType());
+        source.setRewardingStrategy(request.getRewardingStrategy());
+        source.setAmount(request.getAmount());
+        return source;
     }
 }
