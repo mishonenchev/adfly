@@ -30,15 +30,15 @@ public class ProductDto {
     private String description;
     private Long id;
 
-    public ProductRewardingDto getProductRewardingDto() {
-        return productRewardingDto;
+    public ProductRewardingDto getProductRewarding() {
+        return productRewarding;
     }
 
-    public void setProductRewardingDto(ProductRewardingDto productRewardingDto) {
-        this.productRewardingDto = productRewardingDto;
+    public void setProductRewarding(ProductRewardingDto productRewardingDto) {
+        this.productRewarding = productRewardingDto;
     }
 
-    private ProductRewardingDto productRewardingDto;
+    private ProductRewardingDto productRewarding;
 
 
 }
