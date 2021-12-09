@@ -1,7 +1,7 @@
 package io.app.adfly.services;
 
 import io.app.adfly.domain.dto.CreateUserRequest;
-import io.app.adfly.domain.dto.UserView;
+import io.app.adfly.domain.dto.UserDto;
 import io.app.adfly.domain.mapper.IMapper;
 import io.app.adfly.entities.Role;
 import io.app.adfly.entities.User;
@@ -13,12 +13,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ValidationException;
-import java.util.HashSet;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -31,7 +29,7 @@ public class UserService implements UserDetailsService {
     private final IMapper mapper;
 
     @Transactional
-    public UserView create(CreateUserRequest request) {
+    public UserDto create(CreateUserRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new ValidationException("Username exists!");
         }

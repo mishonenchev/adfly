@@ -1,19 +1,20 @@
 package io.app.adfly.controllers;
 import io.app.adfly.domain.dto.ChangePasswordRequest;
-import io.app.adfly.domain.dto.UserView;
+import io.app.adfly.domain.dto.UserDto;
 import io.app.adfly.domain.dto.ValidationError;
 import io.app.adfly.domain.dto.ValidationFailedResponse;
 import io.app.adfly.domain.mapper.IMapper;
 import io.app.adfly.entities.Role;
 import io.app.adfly.repositories.UserRepository;
 import io.app.adfly.services.UserService;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +36,13 @@ public class UserController {
 
     @GetMapping()
     @RolesAllowed({Role.USER_ADVERTISER, Role.USER_COMPANY})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success", response = UserDto.class),
+            @ApiResponse(code = 400, message = "Bad request", response = ValidationFailedResponse.class),
+            @ApiResponse(code = 401, message = "Unauthorized"),
+            @ApiResponse(code = 403, message = "Forbidden"),
+            @ApiResponse(code = 404, message = "Not found")
+    })
     public ResponseEntity<?> GetProfile(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentPrincipalName = authentication.getName();
@@ -49,6 +57,13 @@ public class UserController {
 
     @PostMapping("change-password")
     @RolesAllowed({Role.USER_ADVERTISER, Role.USER_COMPANY})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success", response = UserDto.class),
+            @ApiResponse(code = 400, message = "Bad request", response = ValidationFailedResponse.class),
+            @ApiResponse(code = 401, message = "Unauthorized"),
+            @ApiResponse(code = 403, message = "Forbidden"),
+            @ApiResponse(code = 404, message = "Not found")
+    })
     public ResponseEntity<?> ChangePassword(@RequestBody @Valid ChangePasswordRequest request)
     {
         try {
