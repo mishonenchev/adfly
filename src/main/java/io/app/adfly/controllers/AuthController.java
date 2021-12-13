@@ -2,15 +2,13 @@ package io.app.adfly.controllers;
 
 import io.app.adfly.config.security.JwtTokenUtil;
 import io.app.adfly.domain.dto.CreateUserRequest;
-import io.app.adfly.domain.dto.UserView;
+import io.app.adfly.domain.dto.UserDto;
 import io.app.adfly.domain.dto.ValidationError;
 import io.app.adfly.domain.dto.ValidationFailedResponse;
 import io.app.adfly.domain.mapper.IMapper;
 import io.app.adfly.domain.models.AuthRequest;
 import io.app.adfly.entities.User;
 import io.app.adfly.services.UserService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +17,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,7 +30,6 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping(path = "api/public")
 @RequiredArgsConstructor
-@Api(description = "Authorizing a user")
 public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtTokenUtil;
@@ -42,12 +38,11 @@ public class AuthController {
 
     @PostMapping("login")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success", response = UserView.class),
+            @ApiResponse(code = 200, message = "Success", response = UserDto.class),
             @ApiResponse(code = 400, message = "Bad request", response = ValidationFailedResponse.class),
             @ApiResponse(code = 401, message = "Unauthorized"),
             @ApiResponse(code = 403, message = "Forbidden")
-    }
-    )
+    })
     public ResponseEntity<?> login(@RequestBody @Valid AuthRequest request) {
         try {
             Authentication authenticate = authenticationManager
@@ -66,14 +61,13 @@ public class AuthController {
 
     @PostMapping("register")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success", response = UserView.class),
+            @ApiResponse(code = 200, message = "Success", response = UserDto.class),
             @ApiResponse(code = 400, message = "Bad request", response = ValidationFailedResponse.class),
             @ApiResponse(code = 403, message = "Forbidden")
-    }
-    )
+    })
     public ResponseEntity<?> register(@RequestBody @Valid CreateUserRequest request) {
         try {
-
+            //TODO: Create company if role=USER_COMPANY
             return ResponseEntity.ok(userService.create(request));
         }catch (Exception e){
             return ResponseEntity.badRequest().body(new ValidationFailedResponse(new ValidationError("Not valid info")));

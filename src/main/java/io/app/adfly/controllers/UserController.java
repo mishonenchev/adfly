@@ -20,16 +20,12 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
-import java.awt.print.PageFormat;
-import java.awt.print.Pageable;
-import java.awt.print.Printable;
 import java.util.Objects;
 
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/api/secure/profile")
 @RequiredArgsConstructor
-@Api(description = "User operations")
 public class UserController {
 
     private final UserRepository userRepository;
