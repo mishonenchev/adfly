@@ -18,5 +18,5 @@ public class CreateUserRequest {
     private String rePassword;
     private String authority;
     private String fullName;
-
+    private CreateCompanyRequest createCompanyRequest;
 }

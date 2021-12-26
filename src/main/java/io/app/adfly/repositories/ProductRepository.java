@@ -15,5 +15,5 @@ import java.util.Set;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(value = "SELECT e from Product e where e.productStatus = 0")
-    public Page<Product> findAllByUser(Pageable pageable, User user);
+    Page<Product> findAllByUser(Pageable pageable, User user);
 }

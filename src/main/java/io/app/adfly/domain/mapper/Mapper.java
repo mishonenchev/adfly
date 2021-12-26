@@ -1,9 +1,7 @@
 package io.app.adfly.domain.mapper;
 
 import io.app.adfly.domain.dto.*;
-import io.app.adfly.entities.Product;
-import io.app.adfly.entities.ProductRewarding;
-import io.app.adfly.entities.User;
+import io.app.adfly.entities.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -24,15 +23,26 @@ public class Mapper implements IMapper{
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserView UserToUserView(User user) {
-        var uv = new UserView();
+    public UserDto UserToUserView(User user) {
+        var uv = new UserDto();
         uv.setUsername(user.getUsername());
         uv.setId(user.getId().toString());
         uv.setFullName(user.getFullName());
 
         return uv;
     }
+    @Override
+    public CompanyDto CompanyToCompanyView(Company company){
+        var cv = new CompanyDto();
+        cv.setId(company.getId().toString());
+        cv.setName(company.getName());
+        cv.setDescription(company.getDescription());
+        cv.setWebsite(company.getWebsite());
+        cv.setRegisteredAddress(company.getRegisteredAddress());
+        cv.setRegistrationNumber(company.getRegistrationNumber());
 
+        return cv;
+    }
     @Override
     public User CreateUserRequestToUser(CreateUserRequest request) {
         var user = new User();
@@ -66,26 +76,45 @@ public class Mapper implements IMapper{
         pdto.setDescription(product.getDescription());
         pdto.setId(product.getId());
         pdto.setProductRewarding(ProductRewardingToProductRewardingDto(product.getProductRewarding()));
-
+        if (product.getCategories() != null) {
+            var categoriesDto = new HashSet<CategoryDto>();
+            for (var category : product.getCategories()
+            ) {
+                categoriesDto.add(CategoryToCategoryDto(category));
+            }
+            pdto.setCategories(categoriesDto);
+        }
         return pdto;
     }
 
     @Override
     public ProductRewardingDto ProductRewardingToProductRewardingDto(ProductRewarding productRewarding) {
-      var prdto = new ProductRewardingDto();
-      prdto.setRewardingStrategy(productRewarding.getRewardingStrategy());
-      prdto.setAmount(productRewarding.getAmount());
-      prdto.setRewardingType(productRewarding.getRewardingType());
+        var prdto = new ProductRewardingDto();
+        prdto.setRewardingStrategy(productRewarding.getRewardingStrategy());
+        prdto.setAmount(productRewarding.getAmount());
+        prdto.setRewardingType(productRewarding.getRewardingType());
         return prdto;
     }
 
     @Override
-    public List<ProductDto> ListProductToListProductDto(List<Product> products) {
-        var productList = new ArrayList<ProductDto>();
-        for (int i=0; i<products.size(); i++){
-            productList.add(ProductToProductDto(products.get(i)));
-        };
-        return productList;
+    public <T> ArrayList ListToListDto (List<T> entityList) {
+        if (entityList.get(0) instanceof Product){
+            var productList = new ArrayList<ProductDto>();
+            for (var product :
+                    (List<Product>) entityList) {
+                productList.add(ProductToProductDto(product));
+            }
+            return productList;
+        }
+        if (entityList.get(0) instanceof Category){
+            var categoryList = new ArrayList<CategoryDto>();
+            for (var category:
+                    (List<Category>) entityList){
+                categoryList.add(CategoryToCategoryDto(category));
+            }
+            return categoryList;
+        }
+        return null;
     }
 
     @Override
@@ -102,7 +131,7 @@ public class Mapper implements IMapper{
 
     @Override
     public ProductRewarding ProductRewardingRequestToProductRewarding(ProductRewardingRequest request) {
-       return ProductRewardingRequestToProductRewarding(request, new ProductRewarding());
+        return ProductRewardingRequestToProductRewarding(request, new ProductRewarding());
     }
 
     @Override
@@ -110,6 +139,23 @@ public class Mapper implements IMapper{
         source.setRewardingType(request.getRewardingType());
         source.setRewardingStrategy(request.getRewardingStrategy());
         source.setAmount(request.getAmount());
+        return source;
+    }
+    @Override
+    public CategoryDto CategoryToCategoryDto(Category category) {
+        var categoryDto = new CategoryDto();
+        categoryDto.setDescription(category.getDescription());
+        categoryDto.setName(category.getName());
+        return categoryDto;
+    }
+    @Override
+    public Category CategoryRequestToCategory(CategoryRequest request){
+        return CategoryRequestToCategory(request, new Category());
+    }
+    @Override
+    public Category CategoryRequestToCategory(CategoryRequest request, Category source){
+        source.setName(request.getName());
+        source.setDescription(request.getDescription());
         return source;
     }
 }

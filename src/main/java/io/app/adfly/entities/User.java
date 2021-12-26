@@ -5,6 +5,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 @Entity
 @Table(name = "Users")
@@ -17,9 +18,16 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @OneToOne
+    private Company company;
     @ManyToOne
     private Role role;
+    private String username;
+    private String password;
+    private boolean enabled = true;
+    private String fullName;
+    @OneToMany(mappedBy = "advertiser")
+    private Set<Site> sites;
 
     public String getUsername() {
         return username;
@@ -45,6 +53,13 @@ public class User implements UserDetails {
         return enabled;
     }
 
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
+    }
     public void setUsername(String username) {
         this.username = username;
     }
@@ -64,8 +79,6 @@ public class User implements UserDetails {
         this.password = password;
     }
 
-    private String username;
-    private String password;
 
     public String getFullName() {
         return fullName;
@@ -75,12 +88,9 @@ public class User implements UserDetails {
         this.fullName = fullName;
     }
 
-    private String fullName;
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
-
-    private boolean enabled = true;
 
     public Role getRole() {
         return role;
@@ -88,5 +98,13 @@ public class User implements UserDetails {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Set<Site> getSites() {
+        return sites;
+    }
+
+    public void setSites(Set<Site> sites) {
+        this.sites = sites;
     }
 }
