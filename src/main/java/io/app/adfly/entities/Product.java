@@ -1,8 +1,10 @@
 package io.app.adfly.entities;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
+@Table(name = "Products")
 public class Product {
 
     public Long getId() {
@@ -39,6 +41,16 @@ public class Product {
 
     private String name;
     private String description;
+    @ManyToMany(mappedBy = "products")
+    private Set<Category> categories;
+
+    public Set<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(Set<Category> categories) {
+        this.categories = categories;
+    }
 
     public User getUser() {
         return user;

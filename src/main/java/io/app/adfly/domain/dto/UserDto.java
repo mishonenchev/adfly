@@ -9,5 +9,7 @@ public class UserDto {
 
     private String username;
     private String fullName;
+    private CompanyDto company;
+
     //TODO: View for company and sites
 }

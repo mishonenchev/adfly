@@ -1,14 +1,12 @@
 package io.app.adfly.controllers;
-import io.app.adfly.domain.dto.ChangePasswordRequest;
-import io.app.adfly.domain.dto.UserView;
-import io.app.adfly.domain.dto.ValidationError;
-import io.app.adfly.domain.dto.ValidationFailedResponse;
+import io.app.adfly.domain.dto.*;
 import io.app.adfly.domain.mapper.IMapper;
 import io.app.adfly.entities.Role;
 import io.app.adfly.repositories.UserRepository;
 import io.app.adfly.services.UserService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -37,7 +37,7 @@ public class UserController {
     @GetMapping()
     @RolesAllowed({Role.USER_ADVERTISER, Role.USER_COMPANY})
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success", response = UserView.class),
+            @ApiResponse(code = 200, message = "Success", response = UserDto.class),
             @ApiResponse(code = 400, message = "Bad request", response = ValidationFailedResponse.class),
             @ApiResponse(code = 401, message = "Unauthorized"),
             @ApiResponse(code = 403, message = "Forbidden"),
@@ -47,13 +47,12 @@ public class UserController {
     public ResponseEntity<?> GetProfile(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentPrincipalName = authentication.getName();
-
         var user = userRepository.findByUsername(currentPrincipalName);
         if(user.isPresent()) {
-            return ResponseEntity.ok(mapper.UserToUserView(user.get()));
+            return ResponseEntity.ok(user.get());
         }
 
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.status(401).build();
     }
 
     @PostMapping("change-password")

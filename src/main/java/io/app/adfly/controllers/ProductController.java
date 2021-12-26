@@ -55,7 +55,7 @@ public class ProductController {
 
         var products = productRepository.findAllByUser(pageable, user.get());
         var list = List.copyOf(products.toList());
-        var mappedProducts = mapper.ListProductToListProductDto(list);
+        var mappedProducts =  mapper.ListToListDto(list);
         PaginatedResponse<ProductDto> paginatedResponse = mapper.ListToPaginatedResponse(mappedProducts, request, (int)products.getTotalElements());
 
         return ResponseEntity.ok(paginatedResponse);
@@ -79,8 +79,8 @@ public class ProductController {
         rewarding = productRewardingRepository.save(rewarding);
         product.setProductRewarding(rewarding);
         product.setUser(user.get());
-
-       product = productRepository.save(product);
+        product.setProductStatus(Product.ProductStatus.Active);
+        product = productRepository.save(product);
 
        ProductDto productDto = mapper.ProductToProductDto(product);
        return ResponseEntity.ok(productDto);
