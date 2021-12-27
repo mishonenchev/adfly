@@ -1,8 +1,10 @@
 package io.app.adfly.controllers;
 
 import io.app.adfly.domain.dto.*;
-import io.app.adfly.domain.mapper.IMapper;
+import io.app.adfly.domain.exceptions.RecordNotFoundException;
+import io.app.adfly.domain.mapper.Mapper;
 import io.app.adfly.entities.Product;
+import io.app.adfly.entities.ProductRewarding;
 import io.app.adfly.repositories.ProductRepository;
 import io.app.adfly.repositories.ProductRewardingRepository;
 import io.app.adfly.repositories.UserRepository;
@@ -31,14 +33,13 @@ import java.util.Set;
 @Api(description = "Products operations")
 public class ProductController {
     private final UserService userService;
-    private final IMapper mapper;
     private final ProductRepository productRepository;
     private final ProductRewardingRepository productRewardingRepository;
 
     @GetMapping("")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success", response = PaginatedResponse.class),
-            @ApiResponse(code = 400, message = "Bad request", response = ValidationFailedResponse.class),
+            @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 403, message = "Forbidden")
     }
     )
@@ -47,7 +48,7 @@ public class ProductController {
     {
 
         var request = new PaginatedRequest(startAt, count);
-        Pageable pageable = mapper.PaginatedRequestToPageable(request);
+        Pageable pageable = Mapper.map(request, Pageable.class);
         var user = userService.GetCurrentUser();
 
         if(!user.isPresent())
@@ -55,8 +56,8 @@ public class ProductController {
 
         var products = productRepository.findAllByUser(pageable, user.get());
         var list = List.copyOf(products.toList());
-        var mappedProducts =  mapper.ListToListDto(list);
-        PaginatedResponse<ProductDto> paginatedResponse = mapper.ListToPaginatedResponse(mappedProducts, request, (int)products.getTotalElements());
+        var mappedProducts =  Mapper.mapList(list, ProductDto.class);
+        PaginatedResponse<ProductDto> paginatedResponse = Mapper.mapPaginatedResponse(mappedProducts, request, (int)products.getTotalElements());
 
         return ResponseEntity.ok(paginatedResponse);
     }
@@ -64,7 +65,7 @@ public class ProductController {
     @PostMapping("")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success", response = ProductDto.class),
-            @ApiResponse(code = 400, message = "Bad request", response = ValidationFailedResponse.class),
+            @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 403, message = "Forbidden")
     }
     )
@@ -73,8 +74,8 @@ public class ProductController {
         var user = userService.GetCurrentUser();
         if(!user.isPresent()) return ResponseEntity.status(401).build();
 
-        var product = mapper.ProductRequestToProduct(request);
-        var rewarding = mapper.ProductRewardingRequestToProductRewarding(request.getProductRewarding());
+        var product = Mapper.map(request, Product.class);
+        var rewarding = Mapper.map(request.getProductRewarding(), ProductRewarding.class);
 
         rewarding = productRewardingRepository.save(rewarding);
         product.setProductRewarding(rewarding);
@@ -82,42 +83,42 @@ public class ProductController {
         product.setProductStatus(Product.ProductStatus.Active);
         product = productRepository.save(product);
 
-       ProductDto productDto = mapper.ProductToProductDto(product);
+
+       ProductDto productDto = Mapper.map(product, ProductDto.class);
        return ResponseEntity.ok(productDto);
 
     }
     @PutMapping("{id}")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success", response = ProductDto.class),
-            @ApiResponse(code = 400, message = "Bad request", response = ValidationFailedResponse.class),
+            @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 403, message = "Forbidden")
     }
     )
     public ResponseEntity<?> UpdateProduct(@RequestBody ProductRequest request, @PathVariable Long id){
         var product = productRepository.getById(id);
-        var updatedProduct = mapper.ProductRequestToProduct(request, product);
-        productRepository.save(updatedProduct);
+        Mapper.map(request, product);
+        productRepository.save(product);
 
         var productRewarding = productRewardingRepository.getById(product.getProductRewarding().getId());
-        productRewarding = mapper.ProductRewardingRequestToProductRewarding(request.getProductRewarding(), productRewarding);
+        Mapper.map(request.getProductRewarding(), productRewarding);
 
         productRewardingRepository.save(productRewarding);
-        updatedProduct.setProductRewarding(productRewarding);
 
-        ProductDto productDto = mapper.ProductToProductDto(updatedProduct);
+        ProductDto productDto = Mapper.map(product, ProductDto.class);
         return ResponseEntity.ok(productDto);
     }
 
     @DeleteMapping("{id}")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success"),
-            @ApiResponse(code = 400, message = "Bad request", response = ValidationFailedResponse.class),
+            @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 403, message = "Forbidden")
     }
     )
     public ResponseEntity<?> DeleteProduct(@PathVariable Long id ){
         var product = productRepository.findById(id);
-        if(!product.isPresent()) return ResponseEntity.badRequest().body(new ValidationFailedResponse(new ValidationError("Product id not found")));
+        if(!product.isPresent()) throw new RecordNotFoundException("Product id not found");
         var entity = product.get();
         entity.setProductStatus(Product.ProductStatus.Retired);
         productRepository.save(entity);

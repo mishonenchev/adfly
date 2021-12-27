@@ -2,7 +2,9 @@ package io.app.adfly.services;
 
 import io.app.adfly.domain.dto.CreateUserRequest;
 import io.app.adfly.domain.dto.UserDto;
-import io.app.adfly.domain.mapper.IMapper;
+import io.app.adfly.domain.exceptions.RecordNotFoundException;
+import io.app.adfly.domain.exceptions.ValidationException;
+import io.app.adfly.domain.mapper.Mapper;
 import io.app.adfly.entities.Role;
 import io.app.adfly.entities.User;
 import io.app.adfly.repositories.RoleRepository;
@@ -16,7 +18,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.ValidationException;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -26,7 +27,6 @@ import static java.lang.String.format;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final IMapper mapper;
 
     @Transactional
     public UserDto create(CreateUserRequest request) {
@@ -37,7 +37,7 @@ public class UserService implements UserDetailsService {
             throw new ValidationException("Passwords don't match!");
         }
 
-        User user = mapper.CreateUserRequestToUser(request);
+        User user = Mapper.map(request, User.class);
         var role = roleRepository.findByAuthority(request.getAuthority());
         if(!role.isPresent()){
             var newRole = new Role(request.getAuthority());
@@ -46,7 +46,7 @@ public class UserService implements UserDetailsService {
         user.setRole(role.get());
         user = userRepository.save(user);
 
-        return mapper.UserToUserView(user);
+        return Mapper.map(user, UserDto.class);
     }
 
 
@@ -55,7 +55,7 @@ public class UserService implements UserDetailsService {
         return userRepository
                 .findByUsername(username)
                 .orElseThrow(
-                        () -> new UsernameNotFoundException(format("User with username - %s, not found", username))
+                        () -> new RecordNotFoundException(format("User with username - %s, not found", username))
                 );
     }
 

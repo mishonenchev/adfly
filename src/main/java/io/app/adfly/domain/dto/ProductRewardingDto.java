@@ -3,8 +3,6 @@ package io.app.adfly.domain.dto;
 import io.app.adfly.entities.ProductRewarding;
 
 public class ProductRewardingDto {
-    private Long id;
-
     public ProductRewarding.RewardingStrategy getRewardingStrategy() {
         return rewardingStrategy;
     }

@@ -1,7 +1,9 @@
 package io.app.adfly.controllers;
 import io.app.adfly.domain.dto.*;
-import io.app.adfly.domain.mapper.IMapper;
+import io.app.adfly.domain.exceptions.ValidationException;
+import io.app.adfly.domain.mapper.Mapper;
 import io.app.adfly.entities.Role;
+import io.app.adfly.entities.User;
 import io.app.adfly.repositories.UserRepository;
 import io.app.adfly.services.UserService;
 import io.swagger.annotations.*;
@@ -29,7 +31,6 @@ import java.util.Objects;
 public class UserController {
 
     private final UserRepository userRepository;
-    private final IMapper mapper;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -38,7 +39,7 @@ public class UserController {
     @RolesAllowed({Role.USER_ADVERTISER, Role.USER_COMPANY})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success", response = UserDto.class),
-            @ApiResponse(code = 400, message = "Bad request", response = ValidationFailedResponse.class),
+            @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 401, message = "Unauthorized"),
             @ApiResponse(code = 403, message = "Forbidden"),
             @ApiResponse(code = 404, message = "Not found")
@@ -48,8 +49,10 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentPrincipalName = authentication.getName();
         var user = userRepository.findByUsername(currentPrincipalName);
+
         if(user.isPresent()) {
-            return ResponseEntity.ok(user.get());
+            var userDto = Mapper.map(user.get(), UserDto.class);
+            return ResponseEntity.ok(userDto);
         }
 
         return ResponseEntity.status(401).build();
@@ -59,7 +62,7 @@ public class UserController {
     @RolesAllowed({Role.USER_ADVERTISER, Role.USER_COMPANY})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success"),
-            @ApiResponse(code = 400, message = "Bad request", response = ValidationFailedResponse.class),
+            @ApiResponse(code = 400, message = "Bad request"),
             @ApiResponse(code = 401, message = "Unauthorized"),
             @ApiResponse(code = 403, message = "Forbidden"),
             @ApiResponse(code = 404, message = "Not found")
@@ -69,8 +72,7 @@ public class UserController {
     {
         try {
             if(!Objects.equals(request.getPassword(), request.getRePassword()))
-                return ResponseEntity.badRequest().body(new ValidationFailedResponse(new ValidationError("Passwords do not match")));
-
+                throw new ValidationException("Passwords do not match");
             var user = userService.GetCurrentUser();
             if(user.isPresent()){
                 var userObj =  user.get();
@@ -83,7 +85,7 @@ public class UserController {
             }
             return ResponseEntity.status(401).build();
         }catch (Exception e){
-            return ResponseEntity.badRequest().body(new ValidationFailedResponse(new ValidationError("Old password is wrong")));
+            throw new ValidationException("Old password is wrong");
 
         }
 

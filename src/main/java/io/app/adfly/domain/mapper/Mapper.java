@@ -1,66 +1,52 @@
 package io.app.adfly.domain.mapper;
 
-import io.app.adfly.domain.dto.*;
-import io.app.adfly.entities.*;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import io.app.adfly.domain.dto.PaginatedRequest;
+import io.app.adfly.domain.dto.PaginatedResponse;
+import io.app.adfly.domain.dto.ProductDto;
+import io.app.adfly.domain.dto.UserDto;
+import io.app.adfly.entities.Product;
+import io.app.adfly.entities.User;
+import org.modelmapper.AbstractConverter;
+import org.modelmapper.Converter;
+import org.modelmapper.PropertyMap;
+import org.modelmapper.TypeMap;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
-@Component
-@RequiredArgsConstructor
-public class Mapper implements IMapper{
+public class Mapper {
+    private static org.modelmapper.ModelMapper modelMapper;
+    static {
+        modelMapper = new org.modelmapper.ModelMapper();
 
-    private final PasswordEncoder passwordEncoder;
+        modelMapper.typeMap(Product.class, ProductDto.class).addMappings(mapper -> {
+            mapper.map(src -> src.getProductRewarding(),
+                    ProductDto::setProductRewarding);
+        });
+        modelMapper.typeMap(PaginatedRequest.class, Pageable.class).setConverter(PaginatedRequestToPageableConverter());
 
-    @Override
-    public UserDto UserToUserView(User user) {
-        var uv = new UserDto();
-        uv.setUsername(user.getUsername());
-        uv.setId(user.getId().toString());
-        uv.setFullName(user.getFullName());
-
-        return uv;
-    }
-    @Override
-    public CompanyDto CompanyToCompanyView(Company company){
-        var cv = new CompanyDto();
-        cv.setId(company.getId().toString());
-        cv.setName(company.getName());
-        cv.setDescription(company.getDescription());
-        cv.setWebsite(company.getWebsite());
-        cv.setRegisteredAddress(company.getRegisteredAddress());
-        cv.setRegistrationNumber(company.getRegistrationNumber());
-
-        return cv;
-    }
-    @Override
-    public User CreateUserRequestToUser(CreateUserRequest request) {
-        var user = new User();
-        user.setUsername(request.getUsername());
-        user.setFullName(request.getFullName());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        return user;
     }
 
-    @Override
-    public Pageable PaginatedRequestToPageable(PaginatedRequest request) {
-        int pageNumber = request.getStartAt()/request.getCount();
-        Pageable paging = PageRequest.of(pageNumber, request.getCount(), Sort.by("id"));
-        return paging;
+    public static  <S, T> List<T> mapList(List<S> source, Class<T> targetClass) {
+        return source
+                .stream()
+                .map(element -> modelMapper.map(element, targetClass))
+                .collect(Collectors.toList());
     }
 
-    @Override
-    public <T> PaginatedResponse<T> ListToPaginatedResponse(List<T> list, PaginatedRequest request, int totalCount) {
+    public static <T> T map(Object source, Class<T> destinationType){
+        return modelMapper.map(source, destinationType);
+    }
+
+    public static void map(Object source, Object destination){
+        modelMapper.map(source, destination);
+    }
+
+    public static <T> PaginatedResponse<T> mapPaginatedResponse(List<T> list, PaginatedRequest request, int totalCount){
         var paginateResponse = new PaginatedResponse<T>();
         paginateResponse.setData(list);
         paginateResponse.setStartAt(request.getStartAt());
@@ -69,93 +55,15 @@ public class Mapper implements IMapper{
         return paginateResponse;
     }
 
-    @Override
-    public ProductDto ProductToProductDto(Product product) {
-        var pdto = new ProductDto();
-        pdto.setName(product.getName());
-        pdto.setDescription(product.getDescription());
-        pdto.setId(product.getId());
-        pdto.setProductRewarding(ProductRewardingToProductRewardingDto(product.getProductRewarding()));
-        if (product.getCategories() != null) {
-            var categoriesDto = new HashSet<CategoryDto>();
-            for (var category : product.getCategories()
-            ) {
-                categoriesDto.add(CategoryToCategoryDto(category));
+    private static AbstractConverter<PaginatedRequest, Pageable> PaginatedRequestToPageableConverter(){
+        return new AbstractConverter<>() {
+            @Override
+            protected Pageable convert(PaginatedRequest request) {
+                int pageNumber = request.getStartAt()/request.getCount();
+                Pageable paging = PageRequest.of(pageNumber, request.getCount(), Sort.by("id"));
+                return paging;
             }
-            pdto.setCategories(categoriesDto);
-        }
-        return pdto;
-    }
+        };
 
-    @Override
-    public ProductRewardingDto ProductRewardingToProductRewardingDto(ProductRewarding productRewarding) {
-        var prdto = new ProductRewardingDto();
-        prdto.setRewardingStrategy(productRewarding.getRewardingStrategy());
-        prdto.setAmount(productRewarding.getAmount());
-        prdto.setRewardingType(productRewarding.getRewardingType());
-        return prdto;
-    }
-
-    @Override
-    public <T> ArrayList ListToListDto (List<T> entityList) {
-        if (entityList.get(0) instanceof Product){
-            var productList = new ArrayList<ProductDto>();
-            for (var product :
-                    (List<Product>) entityList) {
-                productList.add(ProductToProductDto(product));
-            }
-            return productList;
-        }
-        if (entityList.get(0) instanceof Category){
-            var categoryList = new ArrayList<CategoryDto>();
-            for (var category:
-                    (List<Category>) entityList){
-                categoryList.add(CategoryToCategoryDto(category));
-            }
-            return categoryList;
-        }
-        return null;
-    }
-
-    @Override
-    public Product ProductRequestToProduct(ProductRequest request) {
-        return ProductRequestToProduct(request, new Product());
-    }
-
-    @Override
-    public Product ProductRequestToProduct(ProductRequest request, Product source) {
-        source.setDescription(request.getDescription());
-        source.setName(request.getName());
-        return source;
-    }
-
-    @Override
-    public ProductRewarding ProductRewardingRequestToProductRewarding(ProductRewardingRequest request) {
-        return ProductRewardingRequestToProductRewarding(request, new ProductRewarding());
-    }
-
-    @Override
-    public ProductRewarding ProductRewardingRequestToProductRewarding(ProductRewardingRequest request, ProductRewarding source) {
-        source.setRewardingType(request.getRewardingType());
-        source.setRewardingStrategy(request.getRewardingStrategy());
-        source.setAmount(request.getAmount());
-        return source;
-    }
-    @Override
-    public CategoryDto CategoryToCategoryDto(Category category) {
-        var categoryDto = new CategoryDto();
-        categoryDto.setDescription(category.getDescription());
-        categoryDto.setName(category.getName());
-        return categoryDto;
-    }
-    @Override
-    public Category CategoryRequestToCategory(CategoryRequest request){
-        return CategoryRequestToCategory(request, new Category());
-    }
-    @Override
-    public Category CategoryRequestToCategory(CategoryRequest request, Category source){
-        source.setName(request.getName());
-        source.setDescription(request.getDescription());
-        return source;
     }
 }

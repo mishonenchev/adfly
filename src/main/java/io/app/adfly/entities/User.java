@@ -104,6 +104,17 @@ public class User implements UserDetails {
         return sites;
     }
 
+    public Advertiser getAdvertiser() {
+        return advertiser;
+    }
+
+    public void setAdvertiser(Advertiser advertiser) {
+        this.advertiser = advertiser;
+    }
+
+    @OneToOne
+    public Advertiser advertiser;
+
     public void setSites(Set<Site> sites) {
         this.sites = sites;
     }
