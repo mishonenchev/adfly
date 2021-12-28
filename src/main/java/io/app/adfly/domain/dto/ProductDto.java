@@ -53,5 +53,24 @@ public class ProductDto {
 
     private ProductRewardingDto productRewarding;
 
+    public String getExternalReference() {
+        return externalReference;
+    }
+
+    public void setExternalReference(String externalReference) {
+        this.externalReference = externalReference;
+    }
+
+    private String externalReference;
+
+    public SiteDto getSite() {
+        return site;
+    }
+
+    public void setSite(SiteDto site) {
+        this.site = site;
+    }
+
+    private SiteDto site;
 
 }
