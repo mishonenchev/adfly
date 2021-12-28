@@ -13,6 +13,8 @@ public class Company {
     private String name;
     private String description;
     private String website;
+
+
     private String registrationNumber;
     private String registeredAddress;
 
@@ -28,6 +30,10 @@ public class Company {
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getWebsite() {

@@ -15,4 +15,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     boolean existsByName(String name);
 
     Page<Category> findByProducts(Product product, Pageable pageable);
+
+    @Query(value = "SELECT u.advertiser.categories From User u WHERE u.id = :userId")
+    Page<Category> findAllByAdvertiser(Long userId, Pageable pageable);
 }
