@@ -1,6 +1,7 @@
 package io.app.adfly.entities;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table(name = "Companies")
@@ -68,4 +69,15 @@ public class Company {
     public void setRegistrationNumber(String registrationNumber) {
         this.registrationNumber = registrationNumber;
     }
+
+    public Set<Site> getSites() {
+        return sites;
+    }
+
+    public void setSites(Set<Site> sites) {
+        this.sites = sites;
+    }
+
+    @OneToMany
+    private Set<Site> sites;
 }

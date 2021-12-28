@@ -1,23 +1,22 @@
 package io.app.adfly.config;
 
 import com.google.common.collect.Lists;
-import springfox.documentation.service.AuthorizationScope;
-import springfox.documentation.service.Contact;
+import org.springframework.web.bind.annotation.RequestMethod;
+import springfox.documentation.builders.ResponseMessageBuilder;
+import springfox.documentation.schema.ModelRef;
+import springfox.documentation.service.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
 import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.ApiKey;
-import springfox.documentation.service.SecurityReference;
-import springfox.documentation.service.VendorExtension;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static springfox.documentation.builders.PathSelectors.regex;
@@ -60,6 +59,22 @@ public class SwaggerConfiguration {
         docket = docket.select()
                 .paths(regex(DEFAULT_INCLUDE_PATTERN))
                 .build();
+
+        docket.useDefaultResponseMessages(false);
+
+        ModelRef forbidden = new ModelRef("RestApiExceptionModel");
+        ModelRef errorModel = new ModelRef("ValidationException");
+        List<ResponseMessage> responseMessages = Arrays.asList(
+                new ResponseMessageBuilder().code(401).message("Unauthorized").build(),
+                new ResponseMessageBuilder().code(403).message("Forbidden").build(),
+                new ResponseMessageBuilder().code(400).message("Bad request").responseModel(errorModel).build(),
+                new ResponseMessageBuilder().code(404).message("NotFound").responseModel(errorModel).build());
+
+        docket.globalResponseMessage(RequestMethod.POST, responseMessages)
+                .globalResponseMessage(RequestMethod.PUT, responseMessages)
+                .globalResponseMessage(RequestMethod.GET, responseMessages)
+                .globalResponseMessage(RequestMethod.DELETE, responseMessages);
+
         return docket;
     }
 
