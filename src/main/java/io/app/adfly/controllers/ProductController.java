@@ -2,9 +2,11 @@ package io.app.adfly.controllers;
 
 import io.app.adfly.domain.dto.*;
 import io.app.adfly.domain.exceptions.RecordNotFoundException;
+import io.app.adfly.domain.exceptions.ValidationException;
 import io.app.adfly.domain.mapper.Mapper;
 import io.app.adfly.entities.Product;
 import io.app.adfly.entities.ProductRewarding;
+import io.app.adfly.repositories.CategoryRepository;
 import io.app.adfly.repositories.ProductRepository;
 import io.app.adfly.repositories.ProductRewardingRepository;
 import io.app.adfly.repositories.UserRepository;
@@ -33,6 +35,7 @@ import java.util.Set;
 @Api(description = "Products operations")
 public class ProductController {
     private final UserService userService;
+    private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final ProductRewardingRepository productRewardingRepository;
 
@@ -122,6 +125,79 @@ public class ProductController {
         var entity = product.get();
         entity.setProductStatus(Product.ProductStatus.Retired);
         productRepository.save(entity);
+        return ResponseEntity.ok().build();
+    }
+
+
+    @PostMapping("{productId}/categories/{categoryId}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success")
+    }
+    )
+    public ResponseEntity<?> AddCategory(@PathVariable Long productId, @PathVariable Long categoryId){
+        var user = userService.GetCurrentUser();
+        if(!user.isPresent()) return ResponseEntity.status(401).build();
+        var product = productRepository.findById(productId).orElseThrow(()-> new RecordNotFoundException("Product id is not found"));
+        var category = categoryRepository.findById(categoryId).orElseThrow(()-> new RecordNotFoundException("Category id is not found"));;
+
+        if(product.getCategories().contains(category)) throw new ValidationException("Category already exist for this product");
+
+        if(!product.getUser().getId().equals(user.get().getId())) throw new ValidationException("Product is not managed by this user");
+
+        product.getCategories().add(category);
+        productRepository.save(product);
+        category.getProducts().add(product);
+        categoryRepository.save(category);
+
+        return ResponseEntity.ok().build();
+    }
+    @GetMapping("{productId}/categories")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success", response = PaginatedResponse.class)
+    }
+    )
+    public ResponseEntity<?> GetCategories(@PathVariable Long productId,
+                                           @RequestParam(defaultValue = "0", required = false) int startAt,
+                                           @RequestParam(defaultValue = "10", required = false) int count){
+
+
+        var user = userService.GetCurrentUser();
+        if(!user.isPresent()) return ResponseEntity.status(401).build();
+        var product = productRepository.findById(productId).orElseThrow(()-> new RecordNotFoundException("Product id is not found"));
+        if(!product.getUser().getId().equals(user.get().getId())) throw new ValidationException("Product is not managed by this user");
+
+        var request = new PaginatedRequest(startAt, count);
+        Pageable pageable = Mapper.map(request, Pageable.class);
+
+        var categories = categoryRepository.findByProducts(product, pageable);
+        var mappedCategories =  Mapper.mapList(categories.toList(), CategoryDto.class);
+        PaginatedResponse<CategoryDto> paginatedResponse = Mapper.mapPaginatedResponse(mappedCategories, request, (int)categories.getTotalElements());
+
+
+        return ResponseEntity.ok(paginatedResponse);
+    }
+
+    @DeleteMapping("{productId}/categories/{categoryId}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success")
+    }
+    )
+    public ResponseEntity<?> DeleteCategory(@PathVariable Long productId, @PathVariable Long categoryId)
+    {
+        var user = userService.GetCurrentUser();
+        if(!user.isPresent()) return ResponseEntity.status(401).build();
+        var product = productRepository.findById(productId).orElseThrow(()-> new RecordNotFoundException("Product id is not found"));
+        var category = categoryRepository.findById(categoryId).orElseThrow(()-> new RecordNotFoundException("Category id is not found"));;
+
+        if(!product.getCategories().contains(category)) throw new ValidationException("Category does not exist for this product");
+
+        if(!product.getUser().getId().equals(user.get().getId())) throw new ValidationException("Product is not managed by this user");
+
+        product.getCategories().remove(category);
+        productRepository.save(product);
+        category.getProducts().remove(product);
+        categoryRepository.save(category);
+
         return ResponseEntity.ok().build();
     }
 }

@@ -26,8 +26,6 @@ public class User implements UserDetails {
     private String password;
     private boolean enabled = true;
     private String fullName;
-    @OneToMany(mappedBy = "advertiser")
-    private Set<Site> sites;
 
     public String getUsername() {
         return username;
@@ -100,10 +98,6 @@ public class User implements UserDetails {
         this.role = role;
     }
 
-    public Set<Site> getSites() {
-        return sites;
-    }
-
     public Advertiser getAdvertiser() {
         return advertiser;
     }
@@ -115,7 +109,4 @@ public class User implements UserDetails {
     @OneToOne
     public Advertiser advertiser;
 
-    public void setSites(Set<Site> sites) {
-        this.sites = sites;
-    }
 }

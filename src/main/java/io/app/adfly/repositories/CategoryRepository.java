@@ -1,6 +1,7 @@
 package io.app.adfly.repositories;
 
 import io.app.adfly.entities.Category;
+import io.app.adfly.entities.Product;
 import io.app.adfly.entities.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,4 +13,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     Page<Category> getAll(Pageable pageable);
 
     boolean existsByName(String name);
+
+    Page<Category> findByProducts(Product product, Pageable pageable);
 }
