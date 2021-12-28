@@ -78,6 +78,6 @@ public class Company {
         this.sites = sites;
     }
 
-    @OneToMany
+    @OneToMany(mappedBy = "company")
     private Set<Site> sites;
 }

@@ -1,9 +1,6 @@
 package io.app.adfly.domain.mapper;
 
-import io.app.adfly.domain.dto.PaginatedRequest;
-import io.app.adfly.domain.dto.PaginatedResponse;
-import io.app.adfly.domain.dto.ProductDto;
-import io.app.adfly.domain.dto.UserDto;
+import io.app.adfly.domain.dto.*;
 import io.app.adfly.entities.Product;
 import io.app.adfly.entities.User;
 import org.modelmapper.AbstractConverter;
@@ -13,6 +10,7 @@ import org.modelmapper.TypeMap;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -20,12 +18,15 @@ import java.util.stream.Collectors;
 
 public class Mapper {
     private static org.modelmapper.ModelMapper modelMapper;
+
     static {
         modelMapper = new org.modelmapper.ModelMapper();
 
         modelMapper.typeMap(Product.class, ProductDto.class).addMappings(mapper -> {
             mapper.map(src -> src.getProductRewarding(),
                     ProductDto::setProductRewarding);
+            mapper.map(src -> src.getSite(),
+                    ProductDto::setSite);
         });
         modelMapper.typeMap(PaginatedRequest.class, Pageable.class).setConverter(PaginatedRequestToPageableConverter());
 
