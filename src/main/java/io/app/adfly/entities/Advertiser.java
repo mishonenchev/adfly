@@ -7,9 +7,9 @@ import java.util.Set;
 public class Advertiser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    private Long id;
 
-    public String summary;
+    private String summary;
 
     public Long getId() {
         return id;
@@ -36,5 +36,11 @@ public class Advertiser {
     }
 
     @ManyToMany
-    public Set<Category> categories;
+    private Set<Category> categories;
+    protected Advertiser(){}
+
+    public Advertiser(String summary, Set<Category> categories){
+        this.summary = summary;
+        this.categories = categories;
+    }
 }

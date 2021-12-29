@@ -1,6 +1,11 @@
 package io.app.adfly.domain.dto;
 
+import lombok.Data;
+
+@Data
 public class CreateAdvertiserRequest {
+    private String summary;
+
     public String getSummary() {
         return summary;
     }
@@ -9,5 +14,4 @@ public class CreateAdvertiserRequest {
         this.summary = summary;
     }
 
-    private String summary;
 }
