@@ -29,4 +29,14 @@ public class ProductRequest {
     }
 
     private ProductRewardingRequest productRewarding;
+
+    public String getExternalReference() {
+        return externalReference;
+    }
+
+    public void setExternalReference(String externalReference) {
+        this.externalReference = externalReference;
+    }
+
+    private String externalReference;
 }

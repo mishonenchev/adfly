@@ -14,6 +14,8 @@ import java.util.Set;
 
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    @Query(value = "SELECT e from Product e where e.productStatus = 0")
-    Page<Product> findAllByUser(Pageable pageable, User user);
+    @Query(value = "SELECT e from Product e where e.productStatus = 0 and e.user = ?1 ")
+    Page<Product> findAllByUser(User user, Pageable pageable);
+
+    boolean existsByExternalReferenceAndUser(String externalReference, User user);
 }

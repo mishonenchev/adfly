@@ -35,7 +35,7 @@ public class UserService implements UserDetailsService {
     private final CompanyRepository companyRepository;
     private final AdvertiserRepository advertiserRepository;
     private final PasswordEncoder passwordEncoder;
-
+  
     @Transactional
     public UserDto create(CreateUserRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
@@ -47,6 +47,7 @@ public class UserService implements UserDetailsService {
 
         User user = Mapper.map(request, User.class);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+      
         if(request.getCompany() != null){
             Company company = Mapper.map(request.getCompany(), Company.class);
             companyRepository.save(company);
