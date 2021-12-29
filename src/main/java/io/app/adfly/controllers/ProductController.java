@@ -6,10 +6,8 @@ import io.app.adfly.domain.exceptions.ValidationException;
 import io.app.adfly.domain.mapper.Mapper;
 import io.app.adfly.entities.Product;
 import io.app.adfly.entities.ProductRewarding;
-import io.app.adfly.repositories.CategoryRepository;
-import io.app.adfly.repositories.ProductRepository;
-import io.app.adfly.repositories.ProductRewardingRepository;
-import io.app.adfly.repositories.UserRepository;
+import io.app.adfly.entities.Role;
+import io.app.adfly.repositories.*;
 import io.app.adfly.services.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiResponse;
@@ -24,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.RolesAllowed;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -33,11 +32,31 @@ import java.util.Set;
 @RequestMapping("/api/secure/company/products")
 @RequiredArgsConstructor
 @Api(description = "Products operations")
+@RolesAllowed({Role.USER_COMPANY})
 public class ProductController {
     private final UserService userService;
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final ProductRewardingRepository productRewardingRepository;
+    private final SiteRepository siteRepository;
+
+    @GetMapping("{productId}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success", response = ProductDto.class)
+    }
+    )
+    public ResponseEntity<?> GetProduct(@PathVariable Long productId)
+    {
+        var user = userService.GetCurrentUser();
+        if(!user.isPresent())
+            return ResponseEntity.status(401).build();
+
+        var product = productRepository.findById(productId).orElseThrow(()-> new RecordNotFoundException(""));
+        if(!product.getUser().equals(user.get())) throw new ValidationException("Product is not managed by this user");
+        var productDto =  Mapper.map(product, ProductDto.class);
+
+        return ResponseEntity.ok(productDto);
+    }
 
     @GetMapping("")
     @ApiResponses(value = {
@@ -57,7 +76,7 @@ public class ProductController {
         if(!user.isPresent())
             return ResponseEntity.status(401).build();
 
-        var products = productRepository.findAllByUser(pageable, user.get());
+        var products = productRepository.findAllByUser(user.get(), pageable);
         var list = List.copyOf(products.toList());
         var mappedProducts =  Mapper.mapList(list, ProductDto.class);
         PaginatedResponse<ProductDto> paginatedResponse = Mapper.mapPaginatedResponse(mappedProducts, request, (int)products.getTotalElements());
@@ -134,7 +153,7 @@ public class ProductController {
             @ApiResponse(code = 200, message = "Success")
     }
     )
-    public ResponseEntity<?> AddCategory(@PathVariable Long productId, @PathVariable Long categoryId){
+    public ResponseEntity<?> AddProductCategory(@PathVariable Long productId, @PathVariable Long categoryId){
         var user = userService.GetCurrentUser();
         if(!user.isPresent()) return ResponseEntity.status(401).build();
         var product = productRepository.findById(productId).orElseThrow(()-> new RecordNotFoundException("Product id is not found"));
@@ -151,38 +170,13 @@ public class ProductController {
 
         return ResponseEntity.ok().build();
     }
-    @GetMapping("{productId}/categories")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Success", response = PaginatedResponse.class)
-    }
-    )
-    public ResponseEntity<?> GetCategories(@PathVariable Long productId,
-                                           @RequestParam(defaultValue = "0", required = false) int startAt,
-                                           @RequestParam(defaultValue = "10", required = false) int count){
-
-
-        var user = userService.GetCurrentUser();
-        if(!user.isPresent()) return ResponseEntity.status(401).build();
-        var product = productRepository.findById(productId).orElseThrow(()-> new RecordNotFoundException("Product id is not found"));
-        if(!product.getUser().getId().equals(user.get().getId())) throw new ValidationException("Product is not managed by this user");
-
-        var request = new PaginatedRequest(startAt, count);
-        Pageable pageable = Mapper.map(request, Pageable.class);
-
-        var categories = categoryRepository.findByProducts(product, pageable);
-        var mappedCategories =  Mapper.mapList(categories.toList(), CategoryDto.class);
-        PaginatedResponse<CategoryDto> paginatedResponse = Mapper.mapPaginatedResponse(mappedCategories, request, (int)categories.getTotalElements());
-
-
-        return ResponseEntity.ok(paginatedResponse);
-    }
 
     @DeleteMapping("{productId}/categories/{categoryId}")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Success")
     }
     )
-    public ResponseEntity<?> DeleteCategory(@PathVariable Long productId, @PathVariable Long categoryId)
+    public ResponseEntity<?> DeleteProductCategory(@PathVariable Long productId, @PathVariable Long categoryId)
     {
         var user = userService.GetCurrentUser();
         if(!user.isPresent()) return ResponseEntity.status(401).build();
@@ -200,4 +194,45 @@ public class ProductController {
 
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("{productId}/site/{siteId}")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success")
+    }
+    )
+    public ResponseEntity<?> AddProductSite(@PathVariable Long productId, @PathVariable Long siteId){
+        var user = userService.GetCurrentUser();
+        if(!user.isPresent()) return ResponseEntity.status(401).build();
+        var product = productRepository.findById(productId).orElseThrow(()-> new RecordNotFoundException("Product id is not found"));
+        if(!product.getUser().getId().equals(user.get().getId())) throw new ValidationException("Product is not managed by this user");
+
+        var site = siteRepository.findById(siteId).orElseThrow(()-> new RecordNotFoundException("Site id is not found"));
+        if(product.getSite()!=null) throw new ValidationException("Product already has a site attached. Consider removing it first.");
+
+        product.setSite(site);
+        productRepository.save(product);
+        var productDto = Mapper.map(product, ProductDto.class);
+
+        return ResponseEntity.ok(productDto);
+    }
+
+    @DeleteMapping("{productId}/site")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success")
+    }
+    )
+    public ResponseEntity<?> RemoveProductSite(@PathVariable Long productId){
+        var user = userService.GetCurrentUser();
+        if(!user.isPresent()) return ResponseEntity.status(401).build();
+        var product = productRepository.findById(productId).orElseThrow(()-> new RecordNotFoundException("Product id is not found"));
+        if(!product.getUser().getId().equals(user.get().getId())) throw new ValidationException("Product is not managed by this user");
+        if(product.getSite()==null) throw new ValidationException("Product has no a site attached.");
+
+        product.setSite(null);
+        productRepository.save(product);
+        var productDto = Mapper.map(product, ProductDto.class);
+
+        return ResponseEntity.ok(productDto);
+    }
+
 }

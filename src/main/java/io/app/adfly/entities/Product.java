@@ -74,7 +74,26 @@ public class Product {
     }
 
     private ProductStatus productStatus;
+    private String externalReference;
 
+    public String getExternalReference() {
+        return externalReference;
+    }
+
+    public void setExternalReference(String externalReference) {
+        this.externalReference = externalReference;
+    }
+
+    public Site getSite() {
+        return site;
+    }
+
+    public void setSite(Site site) {
+        this.site = site;
+    }
+
+    @ManyToOne
+    private Site site;
     public enum ProductStatus{
         Active,
         Retired
