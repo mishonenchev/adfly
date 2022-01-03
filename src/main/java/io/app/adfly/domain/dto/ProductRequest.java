@@ -39,4 +39,14 @@ public class ProductRequest {
     }
 
     private String externalReference;
+
+    public String getProductUrl() {
+        return productUrl;
+    }
+
+    public void setProductUrl(String productUrl) {
+        this.productUrl = productUrl;
+    }
+
+    private String productUrl;
 }

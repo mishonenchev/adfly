@@ -1,4 +1,4 @@
-package io.app.adfly.domain.models;
+package io.app.adfly.domain.dto;
 
 import lombok.Data;
 

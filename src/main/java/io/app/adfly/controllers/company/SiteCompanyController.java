@@ -1,9 +1,10 @@
-package io.app.adfly.controllers;
+package io.app.adfly.controllers.company;
 
 import io.app.adfly.domain.dto.*;
 import io.app.adfly.domain.exceptions.RecordNotFoundException;
 import io.app.adfly.domain.exceptions.ValidationException;
 import io.app.adfly.domain.mapper.Mapper;
+import io.app.adfly.domain.utility.StringGenerator;
 import io.app.adfly.entities.Role;
 import io.app.adfly.entities.Site;
 import io.app.adfly.repositories.SiteRepository;
@@ -23,7 +24,7 @@ import java.util.List;
 @RequestMapping("/api/secure/company/sites")
 @RequiredArgsConstructor
 @RolesAllowed({Role.USER_COMPANY})
-public class SiteController {
+public class SiteCompanyController {
 
     private final UserService userService;
     private final SiteRepository siteRepository;
@@ -44,8 +45,8 @@ public class SiteController {
             return ResponseEntity.status(401).build();
         var sites = siteRepository.findAllByCompany(user.get().getCompany(), pageable);
 
-        var mappedProducts =  Mapper.mapList(sites.toList(), SiteDto.class);
-        PaginatedResponse<SiteDto> paginatedResponse = Mapper.mapPaginatedResponse(mappedProducts, request, (int)sites.getTotalElements());
+        var mappedProducts =  Mapper.mapList(sites.toList(), SiteDetailsDto.class);
+        PaginatedResponse<SiteDetailsDto> paginatedResponse = Mapper.mapPaginatedResponse(mappedProducts, request, (int)sites.getTotalElements());
 
         return ResponseEntity.ok(paginatedResponse);
     }
@@ -61,9 +62,10 @@ public class SiteController {
 
         var site = Mapper.map(request, Site.class);
         site.setCompany(user.get().getCompany());
+        site.setPublicApiKey(StringGenerator.Generate(50));
         siteRepository.save(site);
 
-        var siteDto = Mapper.map(site, SiteDto.class);
+        var siteDto = Mapper.map(site, SiteDetailsDto.class);
         return ResponseEntity.ok(siteDto);
     }
 

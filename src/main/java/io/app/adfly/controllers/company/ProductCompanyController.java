@@ -1,4 +1,4 @@
-package io.app.adfly.controllers;
+package io.app.adfly.controllers.company;
 
 import io.app.adfly.domain.dto.*;
 import io.app.adfly.domain.exceptions.RecordNotFoundException;
@@ -33,7 +33,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Api(description = "Products operations")
 @RolesAllowed({Role.USER_COMPANY})
-public class ProductController {
+public class ProductCompanyController {
     private final UserService userService;
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
