@@ -53,7 +53,7 @@ public class UserService implements UserDetailsService {
             companyRepository.save(company);
             user.setCompany(company);
         }
-        if(request.getAdvertiser() != null){
+        if(request.getAdvertiser()!=null){
             Advertiser advertiser = Mapper.map(request.getAdvertiser(), Advertiser.class);
             advertiserRepository.save(advertiser);
             user.setAdvertiser(advertiser);
