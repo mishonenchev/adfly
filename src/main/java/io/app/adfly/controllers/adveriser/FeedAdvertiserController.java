@@ -1,4 +1,4 @@
-package io.app.adfly.controllers;
+package io.app.adfly.controllers.adveriser;
 
 import io.app.adfly.domain.dto.PaginatedRequest;
 import io.app.adfly.domain.dto.PaginatedResponse;
@@ -21,7 +21,7 @@ import javax.annotation.security.RolesAllowed;
 @RequestMapping("/api/secure/advertiser/feed")
 @RequiredArgsConstructor
 @RolesAllowed({Role.USER_ADVERTISER})
-public class FeedController {
+public class FeedAdvertiserController {
 
     private final UserService userService;
     private final ProductRepository productRepository;

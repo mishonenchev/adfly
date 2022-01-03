@@ -42,4 +42,14 @@ public class Site {
 
     @ManyToOne
     private Company company;
+
+    public String getPublicApiKey() {
+        return publicApiKey;
+    }
+
+    public void setPublicApiKey(String publicApiKey) {
+        this.publicApiKey = publicApiKey;
+    }
+
+    private String publicApiKey;
 }

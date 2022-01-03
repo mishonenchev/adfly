@@ -2,6 +2,7 @@ package io.app.adfly.domain.mapper;
 
 import io.app.adfly.domain.dto.*;
 import io.app.adfly.entities.Product;
+import io.app.adfly.entities.ProductAdvertiser;
 import io.app.adfly.entities.User;
 import org.modelmapper.AbstractConverter;
 import org.modelmapper.Converter;
@@ -29,6 +30,7 @@ public class Mapper {
                     ProductDto::setSite);
         });
         modelMapper.typeMap(PaginatedRequest.class, Pageable.class).setConverter(PaginatedRequestToPageableConverter());
+        modelMapper.typeMap(ProductAdvertiser.class, ProductAdvertiserDto.class).setConverter(ProductAdvertiserToProductAdvertiserDto());
 
     }
 
@@ -63,6 +65,20 @@ public class Mapper {
                 int pageNumber = request.getStartAt()/request.getCount();
                 Pageable paging = PageRequest.of(pageNumber, request.getCount(), Sort.by("id"));
                 return paging;
+            }
+        };
+
+    }
+
+    private static AbstractConverter<ProductAdvertiser, ProductAdvertiserDto> ProductAdvertiserToProductAdvertiserDto(){
+        return new AbstractConverter<>() {
+            @Override
+            protected ProductAdvertiserDto convert(ProductAdvertiser productAdvertiser) {
+                var productAdvertiserDto = new ProductAdvertiserDto();
+                productAdvertiserDto.setProduct(modelMapper.map(productAdvertiser.getProduct(), ProductDto.class));
+                productAdvertiserDto.setId(productAdvertiser.getId());
+                productAdvertiserDto.setUrl("http://localhost:8080/s/"+ productAdvertiser.getRedirectCode());
+                return productAdvertiserDto;
             }
         };
 
