@@ -4,7 +4,7 @@ import io.app.adfly.config.security.JwtTokenUtil;
 import io.app.adfly.domain.dto.CreateUserRequest;
 import io.app.adfly.domain.dto.UserDto;
 import io.app.adfly.domain.mapper.Mapper;
-import io.app.adfly.domain.models.AuthRequest;
+import io.app.adfly.domain.dto.AuthRequest;
 import io.app.adfly.entities.User;
 import io.app.adfly.services.UserService;
 import io.swagger.annotations.ApiResponse;
