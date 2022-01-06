@@ -16,4 +16,5 @@ public interface ProductAdvertiserRepository extends JpaRepository<ProductAdvert
     Page<ProductAdvertiser> getAllByAdvertiser(Advertiser advertiser, Pageable pageable);
 
     Optional<ProductAdvertiser> getByRedirectCode(String redirectCode);
+    Optional<ProductAdvertiser> getByExternalCode(String externalCode);
 }

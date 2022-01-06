@@ -1,5 +1,6 @@
 package io.app.adfly.config;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import org.springframework.web.bind.annotation.RequestMethod;
 import springfox.documentation.builders.ResponseMessageBuilder;
@@ -57,7 +58,8 @@ public class SwaggerConfiguration {
                 .useDefaultResponseMessages(false);
 
         docket = docket.select()
-                .paths(regex(DEFAULT_INCLUDE_PATTERN))
+                .paths(Predicates.or(regex(DEFAULT_INCLUDE_PATTERN),
+                        PathSelectors.ant("/public-api/**")))
                 .build();
 
         docket.useDefaultResponseMessages(false);
